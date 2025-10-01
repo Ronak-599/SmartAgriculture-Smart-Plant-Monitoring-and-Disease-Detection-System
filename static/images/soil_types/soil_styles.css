@@ -1,0 +1,205 @@
+.soil-sample {
+  width: 200px;
+  height: 200px;
+  border-radius: 10px;
+  margin: 15px auto;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.soil-sample:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+}
+
+.soil-sample::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.1"><circle cx="10" cy="10" r="1" fill="white" /><circle cx="25" cy="30" r="0.8" fill="white" /><circle cx="40" cy="15" r="1.2" fill="white" /><circle cx="55" cy="45" r="0.6" fill="white" /><circle cx="70" cy="10" r="1" fill="white" /><circle cx="85" cy="30" r="0.8" fill="white" /><circle cx="25" cy="65" r="1.2" fill="white" /><circle cx="45" cy="80" r="0.6" fill="white" /><circle cx="15" cy="90" r="1" fill="white" /><circle cx="90" cy="60" r="0.8" fill="white" /></svg>');
+  opacity: 0.7;
+}
+
+.soil-sample::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, transparent 85%, rgba(0,0,0,0.3) 100%);
+  z-index: 1;
+}
+
+.black-soil {
+  background-color: #2d2d2d;
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(70, 70, 70, 0.5) 0%, transparent 25%),
+    radial-gradient(circle at 70% 65%, rgba(70, 70, 70, 0.5) 0%, transparent 25%),
+    radial-gradient(ellipse at 50% 100%, rgba(20, 20, 20, 0.7) 0%, transparent 70%);
+}
+
+.red-soil {
+  background-color: #8B2500;
+  background-image: 
+    radial-gradient(circle at 30% 40%, rgba(200, 93, 55, 0.6) 0%, transparent 30%),
+    radial-gradient(circle at 70% 20%, rgba(200, 93, 55, 0.6) 0%, transparent 30%),
+    radial-gradient(ellipse at 50% 100%, rgba(100, 20, 0, 0.7) 0%, transparent 70%);
+}
+
+.laterite-soil {
+  background-color: #BA8759;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(216, 184, 152, 0.7) 0%, transparent 20%),
+    radial-gradient(circle at 75% 75%, rgba(216, 184, 152, 0.7) 0%, transparent 20%),
+    radial-gradient(ellipse at 50% 100%, rgba(150, 100, 60, 0.7) 0%, transparent 70%);
+}
+
+.medium-black-soil {
+  background-color: #4A4A4A;
+  background-image: 
+    radial-gradient(circle at 35% 35%, rgba(100, 100, 100, 0.6) 0%, transparent 25%),
+    radial-gradient(circle at 65% 65%, rgba(100, 100, 100, 0.6) 0%, transparent 25%),
+    radial-gradient(ellipse at 50% 100%, rgba(40, 40, 40, 0.7) 0%, transparent 70%);
+}
+
+.alluvial-soil {
+  background-color: #D3C1AD;
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(240, 230, 220, 0.7) 0%, transparent 20%),
+    radial-gradient(circle at 80% 20%, rgba(240, 230, 220, 0.7) 0%, transparent 20%),
+    radial-gradient(ellipse at 50% 100%, rgba(180, 160, 140, 0.7) 0%, transparent 70%);
+}
+
+.soil-card {
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  padding: 25px;
+  margin: 15px 0;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: #fff;
+}
+
+.soil-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+}
+
+.soil-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: #2c3e50;
+  border-bottom: 3px solid #f0f0f0;
+  padding-bottom: 10px;
+  position: relative;
+}
+
+.soil-title::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background-color: #27ae60;
+}
+
+.soil-description {
+  margin-bottom: 20px;
+  line-height: 1.7;
+  color: #555;
+  font-size: 1.05rem;
+}
+
+.soil-characteristics {
+  padding-left: 20px;
+  margin-bottom: 20px;
+}
+
+.soil-characteristics li {
+  margin-bottom: 8px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.soil-characteristics li::before {
+  content: "•";
+  color: #27ae60;
+  font-weight: bold;
+  display: inline-block;
+  width: 1em;
+  margin-left: -1em;
+}
+
+.soil-crops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.soil-crop-tag {
+  background-color: #e8f5e9;
+  color: #27ae60;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  border: 1px solid #d1e7dd;
+  transition: all 0.3s;
+}
+
+.soil-crop-tag:hover {
+  background-color: #27ae60;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(39,174,96,0.2);
+}
+
+.soil-regions {
+  margin-top: 15px;
+  font-style: italic;
+  color: #666;
+  background-color: #f8f9fa;
+  padding: 10px 15px;
+  border-radius: 8px;
+  border-left: 4px solid #27ae60;
+}
+
+.soil-regions span {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+/* Animation for soil particles */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+.soil-sample::after {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Soil moisture indicator */
+.soil-moisture-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 30%;
+  background: linear-gradient(to top, rgba(20, 100, 170, 0.3), transparent);
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+.soil-sample:hover .soil-moisture-indicator {
+  opacity: 1;
+} 

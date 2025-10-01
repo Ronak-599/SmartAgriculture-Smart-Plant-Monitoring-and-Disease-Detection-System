@@ -1,0 +1,9 @@
+Flask
+Werkzeug
+transformers
+Pillow
+torch
+pandas
+gunicorn
+requests
+scikit-learn 

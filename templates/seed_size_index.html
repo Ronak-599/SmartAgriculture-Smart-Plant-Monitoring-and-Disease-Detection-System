@@ -1,0 +1,1800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agricultural Seed Predictor</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="/static/css/soil_styles.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8faf5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 15px auto;
+            padding: 0 10px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 12px;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(46,204,113,0.2);
+        }
+        .header h1 {
+            font-weight: 700;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+            font-size: 20px;
+        }
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        .form-container {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            margin-bottom: 15px;
+        }
+        .result-container {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            display: none;
+            margin-bottom: 30px;
+        }
+        .result-container h3 {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+            position: relative;
+            font-size: 18px;
+        }
+        .result-container h3:after {
+            content: '';
+            display: block;
+            width: 60px;
+            height: 3px;
+            background: #2ecc71;
+            margin: 10px auto 0;
+            border-radius: 2px;
+        }
+        .soil-display {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-direction: column;
+        }
+        
+        .soil-info-section {
+            display: flex;
+            justify-content: space-between;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .soil-info-section .result-row {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .soil-card {
+            flex: 1;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 15px;
+        }
+        
+        .result-details {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 15px;
+            margin-bottom: 0;
+        }
+        
+        .result-row {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .result-row:last-child {
+            margin-bottom: 0;
+        }
+        
+        .result-label {
+            flex: 0 0 180px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+        
+        .result-value {
+            flex: 1;
+            font-size: 16px;
+            font-weight: 500;
+            color: #27ae60;
+        }
+        
+        .seed-sizes {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .seed-size-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 100px;
+        }
+        
+        .seed-size-item.recommended {
+            background-color: rgba(46, 204, 113, 0.1);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+        
+        .seed-size-item.acceptable {
+            background-color: rgba(243, 156, 18, 0.1);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+        }
+        
+        .seed-size-item.not-recommended {
+            background-color: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+        
+        .seed-icon {
+            margin-bottom: 8px;
+        }
+        
+        .seed-icon img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+        }
+        
+        .seed-size-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+            font-size: 14px;
+        }
+        
+        .seed-size-label {
+            font-size: 11px;
+            color: #7f8c8d;
+        }
+        .weather-info {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            padding: 25px;
+            border-radius: 12px;
+            margin: 30px 0;
+            display: none;
+            box-shadow: 0 4px 12px rgba(33,150,243,0.15);
+        }
+        .weather-info h4 {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        .weather-info h4:before {
+            content: '☁️';
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        .form-row {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 0 10px;
+        }
+        .form-group {
+            flex: 0 0 46%;
+            max-width: 46%;
+        }
+        .form-group label {
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 6px;
+            font-size: 14px;
+            display: block;
+        }
+        .form-control {
+            border-radius: 8px;
+            padding: 10px 12px;
+            border: 1px solid #dfe6e9;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            font-size: 14px;
+            text-overflow: ellipsis;
+            height: auto;
+            line-height: 1.4;
+            width: 100%;
+        }
+        select.form-control {
+            padding-right: 25px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            appearance: menulist;
+            height: 40px;
+        }
+        .form-control:focus {
+            border-color: #27ae60;
+            box-shadow: 0 0 0 0.2rem rgba(46,204,113,0.25);
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 5px;
+        }
+        .slider-label {
+            width: 130px;
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 14px;
+            margin-right: 15px;
+        }
+        .slider-control {
+            flex-grow: 1;
+            position: relative;
+        }
+        .form-control-range {
+            height: 10px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            margin: 0;
+            padding: 0;
+            cursor: pointer;
+        }
+        .range-value {
+            font-weight: 600;
+            background-color: #e8f5e9;
+            color: #27ae60;
+            padding: 4px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            min-width: 45px;
+            text-align: center;
+            position: absolute;
+            right: 0;
+            top: -2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .sliders-section {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+        }
+        .sliders-section h5 {
+            color: #2c3e50;
+            font-size: 15px;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            border: none;
+            padding: 9px 15px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 8px rgba(46,204,113,0.3);
+            transition: all 0.3s;
+            width: 96%;
+            margin: 0 auto;
+            display: block;
+        }
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(46,204,113,0.4);
+            background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+        }
+        #suitable-crops {
+            list-style-type: none;
+            padding-left: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        #suitable-crops li {
+            background-color: #e8f5e9;
+            color: #27ae60;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 16px;
+            border: 1px solid #d4edda;
+            display: inline-block;
+        }
+        #recommended-soil-type {
+            font-size: 24px;
+            font-weight: 600;
+            color: #27ae60;
+            margin-bottom: 15px;
+        }
+        #soil-description {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid #27ae60;
+        }
+        .autofill-section {
+            margin-bottom: 30px;
+            background-color: #f1f8fb;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #3498db;
+        }
+        .autofill-btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 3px 8px rgba(52,152,219,0.2);
+            transition: all 0.3s;
+        }
+        .autofill-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(52,152,219,0.3);
+        }
+        @keyframes highlight-field {
+            0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.8); }
+            70% { box-shadow: 0 0 0 8px rgba(52, 152, 219, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+        }
+        .field-filled {
+            background-color: #f8fffd !important;
+            border-color: #3498db !important;
+        }
+        .field-updated {
+            animation: highlight-field 1s ease;
+        }
+        .soil-preview {
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        #soil-preview-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .soil-preview-info {
+            background: rgba(39, 174, 96, 0.8);
+            color: white;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 8px 12px;
+            font-size: 13px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        .soil-preview:hover .soil-preview-info {
+            transform: translateY(0);
+        }
+        /* Soil Selection Popup */
+        .soil-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .soil-popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .soil-popup {
+            background-color: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .soil-popup-overlay.active .soil-popup {
+            transform: translateY(0);
+        }
+        
+        .soil-popup-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 36px;
+            height: 36px;
+            background-color: #f1f1f1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+        
+        .soil-popup-close:hover {
+            background-color: #e0e0e0;
+            transform: rotate(90deg);
+        }
+        
+        .soil-popup-title {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 15px;
+        }
+        
+        .soil-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .soil-type-card {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            background-color: white;
+        }
+        
+        .soil-type-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .soil-type-card.selected {
+            border: 3px solid #27ae60;
+        }
+        
+        .soil-type-image {
+            height: 150px;
+            width: 100%;
+            object-fit: cover;
+        }
+        
+        .soil-type-info {
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .soil-type-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .soil-select-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .soil-select-btn:hover {
+            background: linear-gradient(135deg, #27ae60 0%, #219653 100%);
+        }
+        
+        .open-soil-popup {
+            background: none;
+            border: none;
+            color: #2980b9;
+            font-size: 13px;
+            padding: 5px 10px;
+            cursor: pointer;
+            text-decoration: underline;
+            display: block;
+            text-align: right;
+            margin-top: 5px;
+        }
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .loader-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #27ae60;
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+            margin: 0 auto 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .location-btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(52,152,219,0.3);
+            transition: all 0.3s ease;
+            width: auto;
+            max-width: 200px;
+        }
+        .location-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(52,152,219,0.4);
+        }
+        .location-btn img {
+            width: 20px;
+            margin-right: 8px;
+        }
+        .result-explanation {
+            background-color: #f9fdf9;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            border-left: 3px solid #2ecc71;
+        }
+        
+        .explanation-title {
+            color: #27ae60;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .explanation-title:before {
+            content: '🌱';
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+        
+        .explanation-text {
+            line-height: 1.6;
+            font-size: 15px;
+            color: #333;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        
+        .explanation-heading {
+            color: #218838;
+            font-size: 15px;
+            font-weight: 600;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(46, 204, 113, 0.2);
+            padding-bottom: 5px;
+        }
+        
+        .explanation-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+        }
+        
+        .explanation-spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #27ae60;
+            border-radius: 50%;
+            animation: spin 1.2s linear infinite;
+            margin-bottom: 10px;
+        }
+        .soil-info-section {
+            flex: 1;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            padding: 15px;
+        }
+        
+        #recommended-crops {
+            padding-left: 0;
+            margin: 5px 0 0 0;
+            list-style-type: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        #recommended-crops li {
+            background-color: #e8f5e9;
+            color: #27ae60;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            border: 1px solid #d4edda;
+            display: inline-block;
+            margin-bottom: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        #recommended-crops li:hover {
+            background-color: #d4edda;
+            transform: translateY(-2px);
+        }
+        
+        #recommended-crops .explanation-loading {
+            width: 100%;
+            padding: 10px 0;
+        }
+        
+        .soil-characteristics h6 {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        
+        .seed-images-section {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+        
+        .seed-images-title {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .seed-image-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .google-search-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fff;
+            color: #444;
+            font-weight: 500;
+            font-size: 15px;
+            padding: 12px 24px;
+            border-radius: 24px;
+            border: 1px solid #ddd;
+            box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
+            transition: all 0.2s ease;
+            text-decoration: none;
+            margin: 10px auto;
+            max-width: 250px;
+        }
+        
+        .google-search-btn:hover {
+            box-shadow: 0 1px 10px rgba(32, 33, 36, 0.28);
+            background-color: #f8f8f8;
+            text-decoration: none;
+            color: #1a73e8;
+        }
+        
+        .google-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        /* Sensor data button and display styles */
+        .sensor-data-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+        .sensor-btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .sensor-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .sensor-data {
+            display: flex;
+            gap: 15px;
+        }
+        .sensor-value {
+            padding: 8px 12px;
+            background-color: white;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2c3e50;
+            border: 1px solid #e0e0e0;
+            flex: 1;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .sensor-value span {
+            font-weight: 600;
+            color: #3498db;
+        }
+        .sensor-loading {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border: 2px solid rgba(52, 152, 219, 0.3);
+            border-radius: 50%;
+            border-top-color: #3498db;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Agricultural Seed Predictor</h1>
+            <p>Get accurate predictions for seed size, sowing depth, and spacing based on crop and environmental conditions</p>
+        </div>
+        
+        <div class="form-container">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+            <button id="detect-location" class="location-btn">
+                <img src="https://cdn-icons-png.flaticon.com/512/2838/2838912.png" alt="Location">
+                Fetch Data
+            </button>
+                <button id="fetch-sensor-data" class="location-btn">
+                    <img src="https://cdn-icons-png.flaticon.com/512/7693/7693591.png" alt="Sensor">
+                    Fetch Sensor
+                </button>
+                <button id="configure-sensor-btn" class="location-btn">
+                    <img src="https://cdn-icons-png.flaticon.com/512/10452/10452097.png" alt="Configure">
+                    Configure Sensor
+                </button>
+                <button id="sensor-docs-btn" class="location-btn">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3177/3177309.png" alt="Docs">
+                    Sensor Setup Docs
+                </button>
+            </div>
+
+            <div id="configure-sensor-modal" class="modal" tabindex="-1" role="dialog">
+              <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Configure External Sensor</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <p>Enter the URL or IP address of your ESP32 sensor's data endpoint. It should return JSON data containing 'temperature', 'humidity', and 'soil_moisture'.</p>
+                    <div class="form-group">
+                      <label for="sensor-url-input">Sensor Data URL/IP:</label>
+                      <input type="text" class="form-control" id="sensor-url-input" placeholder="e.g., http://192.168.1.100/data or https://mysensor.com/api/readings">
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="save-sensor-url">Save changes</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="weather-info" class="weather-info" style="display: none;">
+                <h4>Weather Information</h4>
+                <div id="weather-details"></div>
+            </div>
+
+            <form id="prediction-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="crop_name">Crop Name</label>
+                        <select class="form-control" id="crop_name" name="crop_name" required>
+                            <option value="" selected disabled>Select Crop</option>
+                            {% for crop in crops %}
+                            <option value="{{ crop }}">{{ crop }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="region">Region</label>
+                        <select class="form-control" id="region" name="region" required>
+                            <option value="" selected disabled>Select Region</option>
+                            {% for region in regions %}
+                            <option value="{{ region }}">{{ region }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="season">Season</label>
+                        <select class="form-control" id="season" name="season" required>
+                            <option value="" selected disabled>Select Season</option>
+                            {% for season in seasons %}
+                            <option value="{{ season }}">{{ season }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="soil_type">Soil Type</label>
+                        <select class="form-control" id="soil_type" name="soil_type" required>
+                            <option value="" selected disabled>Select Soil Type</option>
+                            {% for soil in soil_types %}
+                            <option value="{{ soil }}">{{ soil }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="button" class="open-soil-popup" id="open-soil-popup">Select with images</button>
+                        <div id="soil-preview" class="soil-preview">
+                            <img id="soil-preview-image" src="" alt="Soil Preview" style="display: none;">
+                            <div id="soil-preview-info" class="soil-preview-info"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sliders-section">
+                    <h5>Environmental Parameters</h5>
+                    <div class="slider-container">
+                        <div class="slider-label">Temperature (°C)</div>
+                        <div class="slider-control">
+                            <input type="range" class="form-control-range" id="temperature" name="temperature" min="10" max="40" step="0.1" value="0" aria-label="Temperature in Celsius" title="Adjust temperature value">
+                            <span id="temperature-value" class="range-value">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">Soil Moisture (%)</div>
+                        <div class="slider-control">
+                            <input type="range" class="form-control-range" id="moisture" name="moisture" min="0" max="100" step="1" value="0" aria-label="Soil Moisture percentage" title="Adjust soil moisture value">
+                            <span id="moisture-value" class="range-value">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">Humidity (%)</div>
+                        <div class="slider-control">
+                            <input type="range" class="form-control-range" id="humidity" name="humidity" min="0" max="100" step="1" value="0" aria-label="Humidity percentage" title="Adjust humidity value">
+                            <span id="humidity-value" class="range-value">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="slider-container">
+                        <div class="slider-label">Soil pH</div>
+                        <div class="slider-control">
+                            <input type="range" class="form-control-range" id="soil_ph" name="soil_ph" min="3" max="10" step="0.1" value="7.0" aria-label="Soil pH value" title="Adjust soil pH value">
+                            <span id="soil_ph-value" class="range-value">7.0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-success btn-block">Get Predictions</button>
+            </form>
+            
+            <div class="loader" id="loader">
+                <div class="loader-spinner"></div>
+                <p>Processing your request...</p>
+            </div>
+        </div>
+        
+        <div class="result-container" id="result-container">
+            <h3>Prediction Results</h3>
+            
+            <div class="result-details">
+                <div class="result-row">
+                    <div class="result-label">Seed Size Recommendations:</div>
+                    <div class="result-values">
+                        <div class="seed-sizes">
+                            <div class="seed-size-item recommended">
+                                <div class="seed-icon" id="recommended-seed-size-icon">
+                                    <img src="/static/images/seed-icon.png" alt="Seed" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%228%22%20fill%3D%22%2327ae60%22%2F%3E%3C%2Fsvg%3E';">
+                                </div>
+                                <div class="seed-size-name" id="seed-size-result">-</div>
+                                <div class="seed-size-label">Recommended</div>
+                            </div>
+                            <div class="seed-size-item acceptable">
+                                <div class="seed-icon">
+                                    <img src="/static/images/seed-icon.png" alt="Seed" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%226%22%20fill%3D%22%23f39c12%22%2F%3E%3C%2Fsvg%3E';">
+                                </div>
+                                <div class="seed-size-name" id="alternative-seed-size">-</div>
+                                <div class="seed-size-label">Alternative</div>
+                            </div>
+                            <div class="seed-size-item not-recommended">
+                                <div class="seed-icon">
+                                    <img src="/static/images/seed-icon.png" alt="Seed" onerror="this.src='data:image/svg+xml;charset=UTF-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%3Ccircle%20cx%3D%2216%22%20cy%3D%2216%22%20r%3D%224%22%20fill%3D%22%23e74c3c%22%2F%3E%3C%2Fsvg%3E';">
+                                </div>
+                                <div class="seed-size-name" id="not-recommended-seed-size">-</div>
+                                <div class="seed-size-label">Not Recommended</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="soil-display">
+                    <div class="soil-info-section">
+                        <div class="result-row">
+                            <div class="result-label">Sowing Depth:</div>
+                            <div class="result-value" id="sowing-depth-result">-</div>
+                        </div>
+                        
+                        <div class="result-row">
+                            <div class="result-label">Plant Spacing:</div>
+                            <div class="result-value" id="spacing-result">-</div>
+                        </div>
+                    </div>
+                    
+                    <div class="soil-card">
+                        <h5>Selected Soil Type</h5>
+                        <div id="selected-soil-type" style="font-size: 18px; font-weight: 500; color: #27ae60; margin-bottom: 15px;">-</div>
+                        <p id="soil-description" style="margin-bottom: 15px;"></p>
+                        <div class="soil-characteristics">
+                            <h6>Recommended Crops</h6>
+                            <ul id="recommended-crops"></ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="result-explanation">
+                    <h5 class="explanation-title">Practical Growing Tips</h5>
+                    <div id="ai-explanation" class="explanation-text">
+                        <div class="explanation-loading">
+                            <div class="explanation-spinner"></div>
+                            <p>Generating practical advice...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="seed-images-section">
+                    <h5 class="seed-images-title">Want to see what <span id="seed-image-crop-name"></span> Seeds look like?</h5>
+                    <p class="seed-image-description">Click the button below to see images of <span id="seed-size-type"></span> <span id="seed-crop-type"></span> seeds.</p>
+                    <a id="google-search-link" href="#" target="_blank" class="google-search-btn">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/512px-Google_%22G%22_Logo.svg.png" alt="Google" class="google-icon">
+                        View Seed Images
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Soil Type Selection Popup -->
+    <div class="soil-popup-overlay" id="soil-popup-overlay">
+        <div class="soil-popup">
+            <div class="soil-popup-close" id="soil-popup-close">&times;</div>
+            <div class="soil-popup-title">Select Soil Type</div>
+            <p style="text-align: center; margin-bottom: 20px; color: #666;">Click on a soil type to see details and select it for your prediction</p>
+            
+            <div class="soil-type-grid" id="soil-type-grid">
+                <!-- Soil type cards will be added dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        // Update range value display
+        function updateRangeValue(id) {
+            const input = document.getElementById(id);
+            const display = document.getElementById(id + '-value');
+            display.textContent = input.value;
+            input.addEventListener('input', () => {
+                display.textContent = input.value;
+                input.classList.add('field-updated');
+                setTimeout(() => {
+                    input.classList.remove('field-updated');
+                }, 1000);
+            });
+        }
+
+        // Mark filled fields with a green border
+        function markFilledFields() {
+            const formElements = document.querySelectorAll('input, select');
+            formElements.forEach(element => {
+                if (element.value && element.value !== "" && !element.disabled) {
+                    element.classList.add('field-filled');
+                } else {
+                    element.classList.remove('field-filled');
+                }
+
+                element.addEventListener('change', function() {
+                    if (this.value && this.value !== "" && !this.disabled) {
+                        this.classList.add('field-filled');
+                        this.classList.add('field-updated');
+                        setTimeout(() => {
+                            this.classList.remove('field-updated');
+                        }, 1000);
+                    } else {
+                        this.classList.remove('field-filled');
+                    }
+                });
+            });
+        }
+
+        // Initialize range displays and mark filled fields on load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateRangeValue('temperature');
+            updateRangeValue('moisture');
+            updateRangeValue('humidity');
+            updateRangeValue('soil_ph');
+            markFilledFields();
+            
+            // Set initial values
+            document.getElementById('temperature').value = 0;
+            document.getElementById('temperature-value').textContent = 0;
+            document.getElementById('moisture').value = 0;
+            document.getElementById('moisture-value').textContent = 0;
+            document.getElementById('humidity').value = 0;
+            document.getElementById('humidity-value').textContent = 0;
+
+            // Load saved sensor URL if exists
+            const savedSensorUrl = localStorage.getItem('sensorDataUrl');
+            if (savedSensorUrl) {
+                document.getElementById('sensor-url-input').value = savedSensorUrl;
+            }
+        });
+
+        // Detect location button
+        document.getElementById('detect-location').addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    // Success callback
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        
+                        // Show loader while fetching data
+                        document.getElementById('loader').style.display = 'block';
+                        
+                        // Fetch weather data from our Flask proxy
+                        fetch(`/api/weather-proxy?lat=${lat}&lon=${lon}`)
+                            .then(response => {
+                                if (!response.ok) {
+                                    // If response is not ok (e.g., 4xx or 5xx), parse error message from backend
+                                    return response.json().then(errorData => {
+                                        throw new Error(errorData.error || 'Unknown weather service error');
+                                    });
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                // Hide loader
+                                document.getElementById('loader').style.display = 'none';
+                                
+                                // Check if we have valid temperature data from Open-Meteo
+                                if (data.temperature !== null && data.temperature !== undefined) {
+                                    const temp = data.temperature;
+                                    document.getElementById('temperature').value = temp;
+                                    document.getElementById('temperature-value').textContent = Math.round(temp);
+                                    document.getElementById('temperature').classList.add('field-filled');
+                                    document.getElementById('temperature').classList.add('field-updated');
+                                    setTimeout(() => {
+                                        document.getElementById('temperature').classList.remove('field-updated');
+                                    }, 1000);
+                                } else {
+                                    alert('Weather data could not be fetched (temperature missing). Please enter manually.');
+                                }
+
+                                // For humidity, Open-Meteo's current_weather endpoint usually doesn't provide it directly.
+                                // We can leave it as is or show a message if needed.
+                                // For now, if humidity is not provided by Open-Meteo, we won't update the field.
+                                // The backend now returns `humidity: null`, so we can check for that.
+                                if (data.humidity !== null && data.humidity !== undefined) {
+                                    document.getElementById('humidity').value = data.humidity;
+                                    document.getElementById('humidity-value').textContent = Math.round(data.humidity);
+                                    document.getElementById('humidity').classList.add('field-filled');
+                                    document.getElementById('humidity').classList.add('field-updated');
+                                    setTimeout(() => {
+                                        document.getElementById('humidity').classList.remove('field-updated');
+                                    }, 1000);
+                                } else {
+                                    // If humidity is explicitly null, alert the user, but don't prevent other data from populating
+                                    console.warn('Humidity data not available from weather API.');
+                                    // alert('Humidity data could not be fetched. Please enter manually.'); // Consider if this alert is too frequent
+                                }
+
+                                // We still need to determine region and season based on coordinates if weather data is fetched successfully
+                                determineRegion(lat, lon);
+                            })
+                            .catch(error => {
+                                console.error('Error fetching weather data:', error);
+                                document.getElementById('loader').style.display = 'none';
+                                alert('Error fetching weather data: ' + error.message + '. Please enter values manually.');
+                            });
+                    },
+                    // Error callback for geolocation
+                    function(error) {
+                        console.error('Error getting location:', error);
+                        document.getElementById('loader').style.display = 'none';
+                        alert('Could not detect your location. Please select region and enter weather data manually.');
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by your browser. Please select region and enter weather data manually.');
+            }
+        });
+        
+        // Function to determine region in Maharashtra based on coordinates
+        function determineRegion(lat, lon) {
+            // Approximate region boundaries (simplified)
+            let regionName;
+            
+            if (lat >= 19.5 && lat <= 21.8 && lon >= 75.0 && lon <= 78.5) {
+                regionName = 'Vidarbha';
+            } else if (lat >= 17.5 && lat <= 19.5 && lon >= 75.5 && lon <= 78.0) {
+                regionName = 'Marathwada';
+            } else if (lat >= 15.5 && lat <= 19.0 && lon >= 73.5 && lon <= 75.5) {
+                regionName = 'Western Maharashtra';
+            } else if (lat >= 15.5 && lat <= 20.0 && lon >= 72.5 && lon <= 73.5) {
+                regionName = 'Konkan';
+            } else if (lat >= 20.0 && lat <= 22.0 && lon >= 73.5 && lon <= 75.0) {
+                regionName = 'North Maharashtra';
+            } else {
+                regionName = 'Western Maharashtra';
+            }
+            
+            selectRegion(regionName);
+            
+            // Also determine and set the current season based on date
+            setCurrentSeason();
+        }
+        
+        // Function to determine and set current season based on current date
+        function setCurrentSeason() {
+            const now = new Date();
+            const month = now.getMonth() + 1; // JavaScript months are 0-indexed
+            
+            let season;
+            // Determine season based on month in India
+            if (month >= 6 && month <= 9) {
+                season = 'Kharif'; // Monsoon season (June-September)
+            } else if (month >= 10 || month <= 2) {
+                season = 'Rabi';   // Winter season (October-February)
+            } else {
+                season = 'Summer'; // Summer season (March-May)
+            }
+            
+            // Set the season in dropdown
+            setDropdownValue('season', season);
+            
+            // Apply green border and animation to season select
+            document.getElementById('season').classList.add('field-filled');
+            document.getElementById('season').classList.add('field-updated');
+            setTimeout(() => {
+                document.getElementById('season').classList.remove('field-updated');
+            }, 1000);
+        }
+        
+        // Function to select a region in the dropdown
+        function selectRegion(regionName) {
+            setDropdownValue('region', regionName);
+            
+            // Apply green border and animation to region select
+            document.getElementById('region').classList.add('field-filled');
+            document.getElementById('region').classList.add('field-updated');
+            setTimeout(() => {
+                document.getElementById('region').classList.remove('field-updated');
+            }, 1000);
+            
+            // Also update the soil type based on region
+            updateSoilTypeBasedOnRegion(regionName);
+        }
+        
+        // Helper function to set dropdown value
+        function setDropdownValue(dropdownId, value) {
+            const dropdown = document.getElementById(dropdownId);
+            
+            // Find and select the matching option
+            for (let i = 0; i < dropdown.options.length; i++) {
+                if (dropdown.options[i].value === value) {
+                    dropdown.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+        
+        // Function to update soil type based on selected region
+        function updateSoilTypeBasedOnRegion(regionName) {
+            // Mapping of regions to common soil types
+            const soilTypeMap = {
+                'Vidarbha': 'Black Soil',
+                'Marathwada': 'Black Soil',
+                'Western Maharashtra': 'Red Soil',
+                'Konkan': 'Laterite Soil',
+                'North Maharashtra': 'Medium Black Soil'
+            };
+            
+            const soilType = soilTypeMap[regionName] || 'Black Soil';
+            const soilSelect = document.getElementById('soil_type');
+            
+            // Find the option with the matching text
+            let soilTypeFound = false;
+            for (let i = 0; i < soilSelect.options.length; i++) {
+                if (soilSelect.options[i].value === soilType) {
+                    soilSelect.selectedIndex = i;
+                    soilTypeFound = true;
+                    break;
+                }
+            }
+            
+            // Only apply green border if soil type was actually found and updated
+            if (soilTypeFound) {
+                // Apply green border and animation to soil select
+                soilSelect.classList.add('field-filled');
+                soilSelect.classList.add('field-updated');
+                setTimeout(() => {
+                    soilSelect.classList.remove('field-updated');
+                }, 1000);
+                
+                // Update soil preview image when selected automatically
+                const previewImage = document.getElementById('soil-preview-image');
+                const previewInfo = document.getElementById('soil-preview-info');
+                
+                if (soilImages[soilType]) {
+                    previewImage.src = soilImages[soilType];
+                    previewImage.alt = soilType;
+                    previewImage.style.display = 'block';
+                    
+                    previewInfo.textContent = soilDescriptions[soilType] || soilType;
+                    previewInfo.style.display = 'block';
+                }
+            } else {
+                // Remove green border if soil type was not updated
+                soilSelect.classList.remove('field-filled');
+                soilSelect.classList.remove('field-updated');
+            }
+        }
+        
+        // Form submission
+        document.getElementById('prediction-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loader
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('result-container').style.display = 'none';
+            
+            // Get form data and ensure numeric fields are correctly parsed
+            const newFormData = new FormData();
+            newFormData.append('crop_name', document.getElementById('crop_name').value);
+            newFormData.append('region', document.getElementById('region').value);
+            newFormData.append('season', document.getElementById('season').value);
+            newFormData.append('soil_type', document.getElementById('soil_type').value);
+
+            // Explicitly convert numeric values to floats, defaulting to 0 if not a valid number
+            newFormData.append('temperature', parseFloat(document.getElementById('temperature').value) || 0);
+            newFormData.append('moisture', parseFloat(document.getElementById('moisture').value) || 0);
+            newFormData.append('humidity', parseFloat(document.getElementById('humidity').value) || 0);
+            newFormData.append('soil_ph', parseFloat(document.getElementById('soil_ph').value) || 0);
+
+            // Send prediction request
+            fetch('/seed_size/predict', {
+                method: 'POST',
+                body: newFormData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // If response is not ok (e.g., 4xx or 5xx), parse error message from backend
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Unknown server error');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide loader
+                document.getElementById('loader').style.display = 'none';
+                
+                // Show result container
+                document.getElementById('result-container').style.display = 'block';
+                
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                // Display results
+                document.getElementById('seed-size-result').textContent = data.seed_size;
+                document.getElementById('sowing-depth-result').textContent = data.sowing_depth + ' cm';
+                document.getElementById('spacing-result').textContent = data.spacing + ' cm';
+                
+                // Display soil information
+                document.getElementById('selected-soil-type').textContent = data.selected_soil_type;
+                
+                // Make sure we have a proper soil description
+                const soilDescription = data.soil_description || soilDescriptions[data.selected_soil_type] || `${data.selected_soil_type} properties make it suitable for specific crops in Maharashtra's agricultural regions.`;
+                
+                // Check if we're getting the generic description
+                if (soilDescription.includes("found across various regions of Maharashtra") || 
+                    soilDescription.includes("found in various regions of Maharashtra")) {
+                    // Try to get a better description from our predefined list
+                    const betterDescription = soilDescriptions[data.selected_soil_type] || 
+                        `${data.selected_soil_type} is known for its specific agricultural properties that influence crop selection in Maharashtra.`;
+                    document.getElementById('soil-description').textContent = betterDescription;
+                } else {
+                    document.getElementById('soil-description').textContent = soilDescription;
+                }
+                
+                // Get recommended crops from backend
+                document.getElementById('recommended-crops').innerHTML = '<div class="explanation-loading"><div class="explanation-spinner"></div><p>Getting crop recommendations...</p></div>';
+                
+                // The backend /seed_size/predict now directly returns recommendations.
+                const cropsList = document.getElementById('recommended-crops');
+                cropsList.innerHTML = '';
+                
+                if (data.recommended_crops && data.recommended_crops.length > 0) {
+                    data.recommended_crops.forEach(crop => {
+                        const li = document.createElement('li');
+                        li.textContent = crop;
+                        cropsList.appendChild(li);
+                    });
+                } else {
+                    const li = document.createElement('li');
+                    li.textContent = 'No specific recommendations found.';
+                    cropsList.appendChild(li);
+                }
+                
+                // Show loading animation for the explanation
+                document.getElementById('ai-explanation').innerHTML = `
+                    <div class="explanation-loading">
+                        <div class="explanation-spinner"></div>
+                        <p>Generating explanation...</p>
+                    </div>
+                `;
+                
+                // Use a simple fallback explanation in frontend since Gemini is removed
+                const fallbackExplanation = `For growing ${newFormData.get('crop_name')} in ${newFormData.get('region')} during ${newFormData.get('season')}, ${data.seed_size} seeds work best with your ${data.selected_soil_type}. Planting at ${data.sowing_depth} cm deep protects seeds while allowing them to emerge properly in these conditions. Spacing plants ${data.spacing} cm apart gives them enough room to grow without competing for water and nutrients. This approach helps your plants develop strong roots and produce a good harvest, even considering your soil's pH of ${newFormData.get('soil_ph')} and the local temperature of ${newFormData.get('temperature')}°C. These recommendations are based on what has worked well for farmers in similar conditions.`;
+                document.getElementById('ai-explanation').innerHTML = fallbackExplanation;
+
+                // Fetch and display seed images
+                document.getElementById('seed-image-crop-name').textContent = newFormData.get('crop_name');
+                document.getElementById('seed-size-type').textContent = data.seed_size;
+                document.getElementById('seed-crop-type').textContent = newFormData.get('crop_name');
+                document.getElementById('google-search-link').href = `https://www.google.com/search?q=${newFormData.get('crop_name')}+${data.seed_size}+seeds&tbm=isch`;
+                
+                // Scroll to results
+                document.getElementById('result-container').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('loader').style.display = 'none';
+                alert('Prediction error: ' + error.message + '. Please check inputs and try again.');
+            });
+        });
+        
+        // Initialize soil type preview images using local images with correct naming matching the dropdown options
+        const soilImages = {
+            'Black Soil': '/static/images/soil_types/img/black-cotton-soil.jpg',
+            'Red Soil': '/static/images/soil_types/img/red-soil-fruit-plants-purchase.jpg',
+            'Laterite Soil': '/static/images/soil_types/img/close-up-lateritic-soil-photo.jpg',
+            'Medium Black Soil': '/static/images/soil_types/img/surface-of_pile_of_loamy_soil-free-photo.jpg',
+            'Alluvial Soil': '/static/images/soil_types/img/alluvial-soil-1kg-green-era-original-imag4r54wbucymtp.webp',
+            'Sandy Soil': '/static/images/soil_types/img/Sandy-Soil-1.jpg'
+        };
+        
+        const soilDescriptions = {
+            'Black Soil': 'Black soil (Regur) is ideal for cotton cultivation due to its excellent water retention capacity. It contains high amounts of clay minerals, calcium carbonate, magnesium, potash, and lime.',
+            'Red Soil': 'Red soil gets its color from iron oxide and is generally poor in nitrogen and phosphoric acid but rich in potash. Its porous nature provides good drainage and is suitable for millets, tobacco, and legumes.',
+            'Laterite Soil': 'Laterite soil forms in tropical regions with intense weathering. Rich in iron and aluminum but poor in organic matter. Commonly found in high-rainfall regions, it\'s suitable for plantation crops like cashew and rubber.',
+            'Medium Black Soil': 'Medium black soil has a balanced texture with moderate clay content, making it versatile for various crops. It has good fertility and moisture retention while avoiding the extreme stickiness of heavy black soils.',
+            'Alluvial Soil': 'Alluvial soil is extremely fertile, formed by sediment deposited by flowing rivers. Rich in potash, phosphoric acid, and lime, it\'s excellent for growing a wide variety of crops including rice, wheat, and sugarcane.',
+            'Sandy Soil': 'Sandy soil has large particles with good drainage but poor water and nutrient retention. It warms up quickly in spring, making it suitable for early planting. Good for root vegetables and drought-resistant plants.'
+        };
+        
+        const soilRegions = {
+            'Black Soil': 'Vidarbha, Marathwada',
+            'Red Soil': 'Western Maharashtra',
+            'Laterite Soil': 'Konkan',
+            'Medium Black Soil': 'North Maharashtra',
+            'Alluvial Soil': 'River basins throughout Maharashtra',
+            'Sandy Soil': 'River basins throughout Maharashtra'
+        };
+        
+        // Log available soil types and images for debugging
+        console.log('Available soil types in dropdown:', Array.from(document.getElementById('soil_type').options).map(opt => opt.value).filter(v => v));
+        console.log('Available soil images:', Object.keys(soilImages));
+        
+        // Function to update soil type mappings
+        function updateSoilTypeMappings() {
+            // Get all available soil options from the dropdown
+            const soilSelect = document.getElementById('soil_type');
+            const availableSoils = Array.from(soilSelect.options)
+                .map(opt => opt.value)
+                .filter(v => v); // Filter out empty values
+            
+            // Create a function to assign the closest matching image
+            function getClosestMatchingImage(soilType) {
+                // Direct match
+                if (soilImages[soilType]) {
+                    return soilImages[soilType];
+                }
+                
+                // Try case-insensitive match
+                const lowerSoilType = soilType.toLowerCase();
+                for (const [key, value] of Object.entries(soilImages)) {
+                    if (key.toLowerCase() === lowerSoilType) {
+                        return value;
+                    }
+                }
+                
+                // Try partial match
+                for (const [key, value] of Object.entries(soilImages)) {
+                    if (key.toLowerCase().includes(lowerSoilType) || 
+                        lowerSoilType.includes(key.toLowerCase())) {
+                        return value;
+                    }
+                }
+                
+                // Default to black soil if no match
+                console.warn(`No matching image found for soil type: ${soilType}`);
+                return soilImages['Black Soil'];
+            }
+            
+            // Update the soil preview when a soil type is selected
+            document.getElementById('soil_type').addEventListener('change', function() {
+                const selectedSoil = this.value;
+                const previewImage = document.getElementById('soil-preview-image');
+                const previewInfo = document.getElementById('soil-preview-info');
+                
+                if (selectedSoil) {
+                    const imageUrl = getClosestMatchingImage(selectedSoil);
+                    previewImage.src = imageUrl;
+                    previewImage.alt = selectedSoil;
+                    previewImage.style.display = 'block';
+                    
+                    previewInfo.textContent = soilDescriptions[selectedSoil] || selectedSoil;
+                    previewInfo.style.display = 'block';
+                } else {
+                    previewImage.style.display = 'none';
+                    previewInfo.style.display = 'none';
+                }
+            });
+        }
+        
+        // Call the function to set up soil type mappings
+        updateSoilTypeMappings();
+        
+        // Soil popup functionality
+        const openSoilPopup = document.getElementById('open-soil-popup');
+        const soilPopupOverlay = document.getElementById('soil-popup-overlay');
+        const soilPopupClose = document.getElementById('soil-popup-close');
+        const soilTypeGrid = document.getElementById('soil-type-grid');
+        
+        // Open soil popup
+        openSoilPopup.addEventListener('click', function() {
+            // Generate soil type cards dynamically
+            generateSoilCards();
+            
+            // Show popup
+            soilPopupOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        });
+        
+        // Close soil popup
+        soilPopupClose.addEventListener('click', function() {
+            soilPopupOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Re-enable scrolling
+        });
+        
+        // Close popup when clicking outside the popup content
+        soilPopupOverlay.addEventListener('click', function(e) {
+            if (e.target === soilPopupOverlay) {
+                soilPopupOverlay.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        // Generate soil type cards with corrected matching
+        function generateSoilCards() {
+            soilTypeGrid.innerHTML = ''; // Clear existing content
+            
+            // Get all available soil options from the dropdown
+            const soilSelect = document.getElementById('soil_type');
+            const availableSoils = Array.from(soilSelect.options)
+                .map(opt => opt.value)
+                .filter(v => v); // Filter out empty values
+            
+            // For each soil type in the dropdown, create a card
+            availableSoils.forEach(soilType => {
+                const card = document.createElement('div');
+                card.className = 'soil-type-card';
+                card.dataset.soilType = soilType;
+                
+                const currentlySelected = soilSelect.value === soilType;
+                if (currentlySelected) {
+                    card.classList.add('selected');
+                }
+                
+                // Find the closest matching image
+                let imageUrl = '/static/images/soil_types/img/black-cotton-soil.jpg'; // Default
+                for (const [key, value] of Object.entries(soilImages)) {
+                    if (key.toLowerCase() === soilType.toLowerCase() || 
+                        key.toLowerCase().includes(soilType.toLowerCase()) || 
+                        soilType.toLowerCase().includes(key.toLowerCase())) {
+                        imageUrl = value;
+                        break;
+                    }
+                }
+                
+                card.innerHTML = `
+                    <img src="${imageUrl}" alt="${soilType}" class="soil-type-image">
+                    <div class="soil-type-info">
+                        <div class="soil-type-name">${soilType}</div>
+                        <button class="soil-select-btn">Select</button>
+                    </div>
+                `;
+                
+                soilTypeGrid.appendChild(card);
+                
+                // Add click event for the entire card
+                card.addEventListener('click', function() {
+                    // Remove selected class from all cards
+                    document.querySelectorAll('.soil-type-card').forEach(c => {
+                        c.classList.remove('selected');
+                    });
+                    
+                    // Add selected class to clicked card
+                    this.classList.add('selected');
+                    
+                    // Select this soil type
+                    selectSoilFromPopup(this.dataset.soilType);
+                });
+                
+                // Add click event for the button specifically
+                card.querySelector('.soil-select-btn').addEventListener('click', function(e) {
+                    e.stopPropagation(); // Prevent the card click event
+                    selectSoilFromPopup(card.dataset.soilType);
+                    soilPopupOverlay.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                });
+            });
+        }
+        
+        // Select soil from popup - improved selection method
+        function selectSoilFromPopup(soilType) {
+            // Update the dropdown
+            const soilSelect = document.getElementById('soil_type');
+            
+            // First find the option
+            let optionFound = false;
+            for (let i = 0; i < soilSelect.options.length; i++) {
+                if (soilSelect.options[i].value === soilType) {
+                    soilSelect.selectedIndex = i;
+                    optionFound = true;
+                    break;
+                }
+            }
+            
+            if (!optionFound) {
+                console.warn(`Soil type "${soilType}" not found in dropdown options`);
+                return;
+            }
+            
+            // Trigger the change event to update the preview
+            const event = new Event('change');
+            soilSelect.dispatchEvent(event);
+            
+            // Apply the visual feedback
+            soilSelect.classList.add('field-filled');
+            soilSelect.classList.add('field-updated');
+            setTimeout(() => {
+                soilSelect.classList.remove('field-updated');
+            }, 1000);
+        }
+        
+        // Sensor Data Fetching
+        document.getElementById('fetch-sensor-data').addEventListener('click', function() {
+            const fetchButton = document.getElementById('fetch-sensor-data');
+            const originalButtonContent = fetchButton.innerHTML;
+            
+            // Determine the sensor data URL
+            const sensorDataUrl = localStorage.getItem('sensorDataUrl') || '/sensorData/plant_data.json';
+
+            // Disable button during fetch
+            fetchButton.disabled = true;
+            fetchButton.innerHTML = `<div class="sensor-loading"></div> Updating...`;
+            
+            // If using the mock file, first execute the update-sensor-data endpoint to update the sensor data
+            // Otherwise, directly fetch from the provided URL
+            let fetchPromise;
+            if (sensorDataUrl === '/sensorData/plant_data.json') {
+                fetchPromise = fetch('/api/update-sensor-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.status === "error") {
+                        throw new Error(result.error || "Failed to update sensor data on backend.");
+                    }
+                    // After updating the sensor data, fetch the latest data from the mock file
+                    return fetch(sensorDataUrl);
+                });
+            } else {
+                fetchPromise = fetch(sensorDataUrl); // Directly fetch from custom URL
+            }
+
+            fetchPromise
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Get the most recent data (last item in the array if it's an array, otherwise assume it's directly the object)
+                const sensorData = Array.isArray(data) ? data[data.length - 1] : data;
+                
+                // Auto-fill the form fields with sensor data
+                // Ensure values are numbers before assigning
+                const temperatureValue = parseFloat(sensorData.temperature);
+                if (!isNaN(temperatureValue)) {
+                    document.getElementById('temperature').value = temperatureValue;
+                    document.getElementById('temperature-value').textContent = temperatureValue.toFixed(1);
+                    document.getElementById('temperature').classList.add('field-filled');
+                    document.getElementById('temperature').classList.add('field-updated');
+                }
+                
+                // Convert soil_moisture from 0-255 range to 0-100% scale
+                let moisturePercent = 0;
+                const rawMoisture = parseFloat(sensorData.soil_moisture);
+                if (!isNaN(rawMoisture) && rawMoisture !== null && rawMoisture !== undefined) {
+                    // Cap at 255 in case the value exceeds the range
+                    const cappedMoisture = Math.min(255, Math.max(0, rawMoisture));
+                    // Convert to percentage (0-255 to 0-100%)
+                    moisturePercent = Math.round((cappedMoisture / 255) * 100);
+                }
+                
+                document.getElementById('moisture').value = moisturePercent;
+                document.getElementById('moisture-value').textContent = moisturePercent;
+                document.getElementById('moisture').classList.add('field-filled');
+
+                // Update humidity if available and is a number
+                const humidityValue = parseFloat(sensorData.humidity);
+                if (!isNaN(humidityValue) && humidityValue !== null && humidityValue !== undefined) {
+                    document.getElementById('humidity').value = humidityValue;
+                    document.getElementById('humidity-value').textContent = humidityValue.toFixed(1);
+                    document.getElementById('humidity').classList.add('field-filled');
+                }
+                
+                // Apply visual feedback to indicate fields were updated
+                setTimeout(() => {
+                    document.getElementById('temperature').classList.remove('field-updated');
+                    document.getElementById('moisture').classList.remove('field-updated');
+                    document.getElementById('humidity').classList.remove('field-updated');
+                }, 1000);
+                
+                // Re-enable button
+                fetchButton.disabled = false;
+                fetchButton.innerHTML = originalButtonContent;
+            })
+            .catch(error => {
+                console.error('Error fetching sensor data:', error);
+                
+                // Show error message to user
+                alert('Failed to fetch sensor data: ' + error.message + '. Please check the sensor URL or try again.');
+                
+                // Re-enable button
+                fetchButton.disabled = false;
+                fetchButton.innerHTML = originalButtonContent;
+            });
+        });
+
+        // Configure Sensor button and modal logic
+        document.getElementById('configure-sensor-btn').addEventListener('click', function() {
+            $('#configure-sensor-modal').modal('show');
+        });
+
+        document.getElementById('save-sensor-url').addEventListener('click', function() {
+            const sensorUrl = document.getElementById('sensor-url-input').value;
+            if (sensorUrl) {
+                localStorage.setItem('sensorDataUrl', sensorUrl);
+                alert('Sensor URL saved successfully!');
+            } else {
+                localStorage.removeItem('sensorDataUrl'); // Clear if empty
+                alert('Sensor URL cleared. Using default mock data.');
+            }
+            $('#configure-sensor-modal').modal('hide');
+        });
+
+        // Sensor Docs button logic
+        document.getElementById('sensor-docs-btn').addEventListener('click', function() {
+            window.location.href = '/sensor_docs';
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaf Disease Detection</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-green: #38b000;
+            --secondary-green: #008000;
+            --light-green: #d8f3dc;
+            --bright-green: #70e000;
+            --dark-green: #1b4332;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f9f0;
+            color: #333;
+        }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, var(--dark-green), var(--primary-green));
+            color: white;
+            padding: 2rem 0;
+            border-radius: 0 0 1.5rem 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="%23ffffff20"><path d="M17.66 8L12 2.35 6.34 8C4.78 9.56 4 11.64 4 13.64s.78 4.11 2.34 5.67 3.61 2.35 5.66 2.35 4.1-.79 5.66-2.35S20 15.64 20 13.64 19.22 9.56 17.66 8zM6 14c.01-2 .62-3.27 1.76-4.4L12 5.27l4.24 4.38C17.38 10.77 17.99 12 18 14H6z"/></svg>');
+            background-repeat: space;
+            opacity: 0.07;
+            z-index: 0;
+        }
+        
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .drop-zone {
+            border: 3px dashed #aedbae;
+            background-color: rgba(216, 243, 220, 0.5);
+            transition: all 0.3s ease;
+            border-radius: 1rem;
+            padding: 3rem;
+            margin-bottom: 2rem;
+        }
+        
+        .drop-zone.dragover {
+            border-color: var(--primary-green);
+            background-color: var(--light-green);
+            transform: scale(1.01);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+        
+        .drop-zone-icon {
+            color: var(--primary-green);
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .upload-panel {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-top: 5px solid var(--primary-green);
+            position: relative;
+        }
+        
+        .loading {
+            display: none;
+        }
+        
+        .loading.active {
+            display: flex;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: auto;
+            padding: 2rem;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 900px;
+            max-height: 90vh;
+            position: relative;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            transform: scale(0.95);
+            animation: scaleIn 0.3s ease forwards;
+            overflow: auto;
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.95); }
+            to { transform: scale(1); }
+        }
+        
+        .close-modal {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #4a5568;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: #f3f4f6;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        
+        .close-modal:hover {
+            background-color: #e5e7eb;
+            color: #000;
+            transform: rotate(90deg);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 500px;
+            width: 100%;
+            padding: 1rem;
+        }
+        
+        .result-card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            height: 100%;
+            transition: all 0.3s ease;
+            border-left: 5px solid transparent;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid var(--primary-green);
+        }
+        
+        .result-img-container {
+            height: 250px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            background-color: #f3f4f6;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .result-img-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+            border-radius: 0.75rem;
+            pointer-events: none;
+        }
+        
+        .result-img-container img {
+            transition: all 0.3s ease;
+        }
+        
+        .result-card:hover .result-img-container img {
+            transform: scale(1.05);
+        }
+        
+        .prediction-label {
+            color: var(--dark-green);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .prediction-value {
+            font-size: 1.25rem;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .prediction-confidence {
+            display: inline-block;
+            padding: 0.3rem 0.75rem;
+            border-radius: 2rem;
+            background-color: var(--light-green);
+            color: var(--dark-green);
+            font-weight: 600;
+            margin-top: 0.75rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .result-card:hover .prediction-confidence {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-green);
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 8px rgba(56, 176, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.4s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary-green);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(56, 176, 0, 0.3);
+        }
+        
+        .btn-primary:hover::after {
+            left: 100%;
+        }
+        
+        .animation-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        .info-box {
+            border-radius: 1rem;
+            background-color: var(--light-green);
+            border-left: 4px solid var(--primary-green);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .info-box:hover {
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .info-box::before {
+            content: '\f05a';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            right: -15px;
+            bottom: -15px;
+            font-size: 8rem;
+            color: rgba(0, 0, 0, 0.03);
+            z-index: 0;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: #4b5563;
+            background-color: white;
+            margin-top: 3rem;
+            border-top: 1px solid #e5e7eb;
+            position: relative;
+        }
+        
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-green), var(--bright-green), var(--primary-green));
+            opacity: 0.7;
+        }
+        
+        /* Spinner Animation */
+        .spinner {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto;
+        }
+        
+        .spinner-inner {
+            box-sizing: border-box;
+            display: block;
+            position: absolute;
+            width: 64px;
+            height: 64px;
+            margin: 8px;
+            border: 6px solid var(--primary-green);
+            border-radius: 50%;
+            animation: spinner 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            border-color: var(--primary-green) transparent transparent transparent;
+        }
+        
+        .spinner-inner:nth-child(1) {
+            animation-delay: -0.45s;
+        }
+        
+        .spinner-inner:nth-child(2) {
+            animation-delay: -0.3s;
+        }
+        
+        .spinner-inner:nth-child(3) {
+            animation-delay: -0.15s;
+        }
+        
+        @keyframes spinner {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .header-gradient {
+                padding: 1.5rem 0;
+                margin-bottom: 1rem;
+            }
+            
+            .drop-zone {
+                padding: 2rem;
+            }
+            
+            .upload-panel {
+                padding: 1.5rem;
+            }
+            
+            .result-img-container {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Section -->
+    <div class="header-gradient">
+        <div class="main-container header-content">
+            <div class="flex items-center justify-center mb-4">
+                <i class="fas fa-leaf text-4xl mr-3"></i>
+                <h1 class="text-4xl font-bold text-center">Leaf Disease Detection</h1>
+            </div>
+            <p class="text-center text-xl opacity-90">Upload a leaf image to diagnose plant diseases with AI</p>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="upload-panel">
+            <div id="drop-zone" class="drop-zone cursor-pointer">
+                <div class="text-center">
+                    <i class="fas fa-cloud-upload-alt drop-zone-icon text-5xl"></i>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Upload Your Leaf Image</h3>
+                    <p class="text-gray-600 mb-4">Drag and drop your image here or click to browse</p>
+                    <button class="btn-primary">
+                        <i class="fas fa-file-image mr-2"></i>Choose Image
+                    </button>
+                    <input type="file" id="file-input" class="hidden" accept="image/*" aria-label="Upload leaf image">
+                </div>
+            </div>
+
+            <div id="loading" class="loading items-center justify-center py-8">
+                <div class="text-center">
+                    <div class="spinner">
+                        <div class="spinner-inner"></div>
+                        <div class="spinner-inner"></div>
+                        <div class="spinner-inner"></div>
+                        <div class="spinner-inner"></div>
+                    </div>
+                    <p class="mt-5 text-lg text-gray-700">Analyzing your leaf image...</p>
+                    <p class="text-sm text-gray-500 mt-2">Our AI is examining the patterns and symptoms</p>
+                </div>
+            </div>
+
+            <div id="result" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="result-card">
+                        <h3 class="text-xl font-bold text-center text-gray-800 mb-4">
+                            <i class="fas fa-microscope mr-2 text-green-600"></i>Diagnosis Results
+                        </h3>
+                        <div class="result-img-container">
+                            <img id="preview-image" class="max-h-full max-w-full rounded-lg" src="" alt="Uploaded leaf">
+                        </div>
+                        <div class="text-center">
+                            <p class="prediction-label">Detected Disease:</p>
+                            <p id="disease-name" class="prediction-value mb-2"></p>
+                            <p id="confidence" class="prediction-confidence"></p>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-800">
+                                <i class="fas fa-chart-bar mr-2 text-green-600"></i>Probability Analysis
+                            </h3>
+                            <button id="fullscreen-btn" class="btn-primary flex items-center">
+                                <i class="fas fa-expand-alt mr-2"></i>Fullscreen
+                            </button>
+                        </div>
+                        <div class="h-64 md:h-80">
+                            <canvas id="predictions-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h3 class="text-lg font-semibold text-green-800 mb-2 relative z-10">
+                        <i class="fas fa-info-circle mr-2"></i>About This Analysis
+                    </h3>
+                    <p class="text-gray-700 relative z-10">
+                        This analysis uses a machine learning model trained on thousands of plant leaf images. The model identifies
+                        patterns associated with various plant diseases and provides a probability score for each possible condition.
+                        For best results, upload clear, well-lit images of individual leaves showing the symptoms.
+                    </p>
+                </div>
+                
+                <div class="mt-6 text-center">
+                    <button id="analyze-again" class="btn-primary mt-4">
+                        <i class="fas fa-redo mr-2"></i>Analyze Another Image
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Modal -->
+    <div id="chart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Detailed Disease Probability Analysis</h2>
+            <div class="chart-container">
+                <canvas id="fullscreen-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="main-container">
+            <div class="flex items-center justify-center mb-3">
+                <i class="fas fa-leaf text-green-600 mr-2"></i>
+                <p class="font-semibold">Agricultural Analysis Suite - Leaf Disease Detection</p>
+            </div>
+            <p class="text-sm mt-2">Powered by advanced AI to help identify plant diseases</p>
+            <p class="text-xs mt-3 text-gray-500">© 2025 All rights reserved</p>
+        </div>
+    </footer>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const previewImage = document.getElementById('preview-image');
+        const diseaseName = document.getElementById('disease-name');
+        const confidence = document.getElementById('confidence');
+        const modal = document.getElementById('chart-modal');
+        const closeModal = document.querySelector('.close-modal');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const analyzeAgainBtn = document.getElementById('analyze-again');
+        let predictionsChart = null;
+        let fullscreenChart = null;
+
+        // Modal event listeners
+        fullscreenBtn.addEventListener('click', () => {
+            modal.classList.add('active');
+            createFullscreenChart();
+        });
+
+        closeModal.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+        
+        // Analyze again button
+        analyzeAgainBtn.addEventListener('click', () => {
+            result.classList.add('hidden');
+            dropZone.style.display = 'block';
+            // Clear previous results
+            if (predictionsChart) {
+                predictionsChart.destroy();
+                predictionsChart = null;
+            }
+        });
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        // Highlight drop zone when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', handleDrop, false);
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFiles);
+
+        function preventDefaults (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight(e) {
+            dropZone.classList.add('dragover');
+        }
+
+        function unhighlight(e) {
+            dropZone.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            handleFiles({ target: { files: files } });
+        }
+
+        function handleFiles(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Display loading state
+                loading.classList.add('active');
+                dropZone.style.display = 'none';
+                
+                // Create FormData
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                // Create preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+                
+                // Send to server
+                fetch('/leaf_disease/predict', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Hide loading
+                    loading.classList.remove('active');
+                    
+                    // Show results
+                    result.classList.remove('hidden');
+                    
+                    // Update UI with top prediction
+                    diseaseName.textContent = data.top_prediction.disease;
+                    confidence.textContent = data.top_prediction.confidence;
+                    
+                    // Create chart
+                    createChart(data.predictions);
+                })
+                .catch(error => {
+                    alert('Error: ' + error);
+                    loading.classList.remove('active');
+                    dropZone.style.display = 'block';
+                });
+            }
+        }
+
+        function createChart(predictions) {
+            const ctx = document.getElementById('predictions-chart').getContext('2d');
+            
+            // Extract data for chart
+            const labels = predictions.map(p => p.disease);
+            const data = predictions.map(p => p.score);
+            
+            // Use a variety of colors for better visual differentiation
+            const colors = [
+                'rgba(56, 176, 0, 0.8)',    // Green
+                'rgba(54, 162, 235, 0.8)',  // Blue
+                'rgba(255, 99, 132, 0.8)',  // Red
+                'rgba(255, 159, 64, 0.8)',  // Orange
+                'rgba(153, 102, 255, 0.8)', // Purple
+                'rgba(255, 206, 86, 0.8)',  // Yellow
+                'rgba(75, 192, 192, 0.8)',  // Teal
+                'rgba(232, 62, 140, 0.8)'   // Pink
+            ];
+            
+            // Create colors array based on number of predictions
+            const chartColors = data.map((_, index) => colors[index % colors.length]);
+            const chartBorderColors = chartColors.map(color => color.replace('0.8', '1'));
+            
+            // Destroy previous chart if exists
+            if (predictionsChart) {
+                predictionsChart.destroy();
+            }
+            
+            // Create new chart
+            predictionsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Probability Score',
+                        data: data,
+                        backgroundColor: chartColors,
+                        borderColor: chartBorderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Probability: ${(context.raw * 100).toFixed(2)}%`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 1,
+                            ticks: {
+                                callback: function(value) {
+                                    return (value * 100) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createFullscreenChart() {
+            // Only create if we have data
+            if (!predictionsChart) return;
+            
+            const ctx = document.getElementById('fullscreen-chart').getContext('2d');
+            
+            // If fullscreen chart exists, destroy it
+            if (fullscreenChart) {
+                fullscreenChart.destroy();
+            }
+            
+            // Clone options and data from the existing chart
+            fullscreenChart = new Chart(ctx, {
+                type: predictionsChart.config.type,
+                data: JSON.parse(JSON.stringify(predictionsChart.config.data)),
+                options: JSON.parse(JSON.stringify(predictionsChart.config.options))
+            });
+        }
+    </script>
+</body>
+</html> 
